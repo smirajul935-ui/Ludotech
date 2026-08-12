@@ -6,31 +6,24 @@
     <title>SagarTech99 Ludo</title>
     <style>
         body { 
-            background: #000000; 
+            background: #0A0A0A; 
             color: #ffffff; 
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
             text-align: center; 
             margin: 0; 
-            padding: 20px; 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
-            min-height: 90vh;
+            padding: 0; 
         }
-        /* Premium Glassmorphism Black Finish */
         .glass-box { 
             background: rgba(255, 255, 255, 0.05); 
             backdrop-filter: blur(15px); 
-            -webkit-backdrop-filter: blur(15px);
             padding: 30px; 
             border-radius: 20px; 
             border: 1px solid rgba(255, 255, 255, 0.1); 
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.8);
-            width: 90%; 
+            margin: 50px auto;
+            width: 85%; 
             max-width: 400px;
         }
-        .brand { color: #00FFFF; text-shadow: 0 0 15px #00FFFF, 0 0 30px #0072FF; font-size: 28px; font-weight: bold; margin-bottom: 5px; }
-        .sub-brand { color: #aaaaaa; font-size: 14px; margin-bottom: 25px; }
+        .brand { color: #00FFFF; font-size: 28px; font-weight: bold; margin-bottom: 5px; }
         input { 
             padding: 15px; width: 85%; border-radius: 12px; border: 1px solid #00FFFF; 
             background: rgba(0,0,0,0.5); color: #00FFFF; font-size: 16px; text-align: center; margin-bottom: 20px; outline: none;
@@ -39,24 +32,44 @@
             padding: 15px; border-radius: 12px; border: none; 
             background: linear-gradient(45deg, #FF007F, #7F00FF); 
             color: white; font-size: 16px; font-weight: bold; cursor: pointer; width: 95%; 
-            box-shadow: 0 5px 15px rgba(255, 0, 127, 0.4); transition: 0.3s;
         }
         button:active { transform: scale(0.95); }
         .hidden { display: none !important; }
-        .player-list { margin-top: 20px; text-align: left; background: rgba(0,0,0,0.4); padding: 15px; border-radius: 15px; border: 1px solid rgba(255,255,255,0.05);}
-        .player-item { font-size: 16px; color: #00FF00; margin: 8px 0; display: flex; align-items: center; }
-        .player-item::before { content: "👤"; margin-right: 10px; }
         
-        /* Dice Animation */
-        #diceArea { margin-top: 30px; }
-        #diceResult { 
-            font-size: 80px; margin: 20px auto; width: 100px; height: 100px; 
-            line-height: 100px; background: rgba(255,255,255,0.1); border-radius: 20px;
-            box-shadow: 0 0 20px #00FFFF; transition: 0.2s;
+        /* Ludo Board Area */
+        #ludoBoardArea {
+            position: relative;
+            width: 100vw;
+            max-width: 500px;
+            margin: auto;
         }
-        .rolling { animation: spin 0.5s infinite linear; color: #FF007F; }
-        @keyframes spin { 100% { transform: rotate(360deg) scale(1.2); } }
-        #turnMsg { color: #FF007F; margin-bottom: 15px; font-weight: bold; }
+        #ludoBoardImg {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+        
+        /* Dice Container at the bottom */
+        #diceArea { 
+            background: #1C1D22;
+            padding: 20px;
+            border-top-left-radius: 20px;
+            border-top-right-radius: 20px;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            box-sizing: border-box;
+            box-shadow: 0 -5px 20px rgba(0,0,0,0.5);
+        }
+        #diceResult { 
+            font-size: 60px; margin: 10px auto; width: 80px; height: 80px; 
+            line-height: 80px; background: rgba(255,255,255,0.1); border-radius: 15px;
+            box-shadow: 0 0 15px #00FFFF; transition: 0.2s;
+        }
+        .rolling { animation: spin 0.3s infinite linear; color: #FF007F; }
+        @keyframes spin { 100% { transform: rotate(360deg) scale(1.1); } }
+        #turnMsg { color: #00FF00; margin-bottom: 10px; font-weight: bold; font-size: 14px;}
+        .player-info { color: #aaa; font-size: 12px; margin-bottom: 5px;}
     </style>
 </head>
 <body>
@@ -64,32 +77,23 @@
     <!-- SCREEN 1: LOGIN -->
     <div id="loginScreen" class="glass-box">
         <div class="brand">SagarTech99</div>
-        <div class="sub-brand">Premium Ludo Multiplayer</div>
-        
-        <input type="text" id="playerName" placeholder="Enter your Name" maxlength="15">
-        <button onclick="joinLobby()">ENTER ROOM</button>
+        <p>Welcome to Room Ludo</p>
+        <input type="text" id="playerName" placeholder="Enter your Game Name" maxlength="12">
+        <button onclick="joinGame()">ENTER LUDO</button>
     </div>
 
-    <!-- SCREEN 2: WAITING LOBBY -->
-    <div id="lobbyScreen" class="glass-box hidden">
-        <div class="brand">LOBBY</div>
-        <p style="color: #ccc; font-size: 12px;">Room ID: <span id="displayRoomId" style="color:#00FFFF;"></span></p>
+    <!-- SCREEN 2: GAME BOARD -->
+    <div id="gameScreen" class="hidden">
         
-        <div class="player-list">
-            <h3 style="margin-top: 0; color: #fff; font-size: 14px;">Players Joined:</h3>
-            <div id="playersDiv"></div>
+        <div id="ludoBoardArea">
+            <!-- Professional Ludo Board Image -->
+            <img id="ludoBoardImg" src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e2/Ludo_board.svg/1024px-Ludo_board.svg.png" alt="Ludo Board">
         </div>
 
-        <p id="waitingMsg" style="color: #ffaa00; font-size: 12px; margin-top: 20px;">Waiting for Host to start...</p>
-        <button id="startBtn" class="hidden" style="background: linear-gradient(45deg, #00C6FF, #0072FF);" onclick="startGame()">▶ START GAME</button>
-    </div>
-
-    <!-- SCREEN 3: LUDO DICE -->
-    <div id="gameScreen" class="glass-box hidden">
-        <div class="brand">LUDO MATCH</div>
-        <p id="turnMsg">Game Started!</p>
-        
+        <!-- Dice Control at Bottom -->
         <div id="diceArea">
+            <div class="player-info">Playing as: <span id="myNameDisplay" style="color:white;font-weight:bold;"></span></div>
+            <div id="turnMsg">Waiting for dice roll...</div>
             <div id="diceResult">🎲</div>
             <button onclick="rollDice()">ROLL DICE</button>
         </div>
@@ -100,7 +104,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
 
     <script>
-        // FIREBASE INITIALIZATION
+        // 🔴 FIREBASE CONFIGURATION
         const firebaseConfig = {
             apiKey: "AIzaSyDN3gmMK-wrOV2VsLS1F-vGsijahPkTG4g",
             authDomain: "ludo-e8ffb.firebaseapp.com",
@@ -111,100 +115,60 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        // ROOM ID INJECTED FROM JAVA
+        // INJECTED FROM JAVA AIDE
         let roomId = "INJECTED_ROOM_ID"; 
-        if(roomId === "INJECTED_ROOM_ID") roomId = "TestRoom"; // Fallback for browser testing
+        if(roomId === "INJECTED_ROOM_ID") roomId = "TestRoom"; // Browser test fallback
 
         let myName = "";
-        let isHost = false;
-        let myPlayerKey = "";
 
-        // 1. JOIN LOBBY
-        function joinLobby() {
+        // JOIN GAME
+        function joinGame() {
             myName = document.getElementById("playerName").value.trim();
             if (myName === "") { alert("Please enter your name!"); return; }
 
             document.getElementById("loginScreen").classList.add("hidden");
-            document.getElementById("lobbyScreen").classList.remove("hidden");
-            document.getElementById("displayRoomId").innerText = roomId;
+            document.getElementById("gameScreen").classList.remove("hidden");
+            document.getElementById("myNameDisplay").innerText = myName;
 
-            const roomRef = db.ref("rooms/" + roomId);
-            
-            // Check if room exists to assign Host
-            roomRef.once("value", snapshot => {
-                if (!snapshot.exists() || !snapshot.val().host) {
-                    isHost = true;
-                    roomRef.update({ host: myName, status: "waiting" });
-                    document.getElementById("startBtn").classList.remove("hidden");
-                    document.getElementById("waitingMsg").classList.add("hidden");
-                }
-            });
-
-            // Add player to list
-            const playerRef = roomRef.child("players").push();
-            myPlayerKey = playerRef.key;
-            playerRef.set({ name: myName });
-            playerRef.onDisconnect().remove(); // Auto remove when closed
-
-            listenToLobby();
+            listenToDice();
         }
 
-        // 2. LISTEN TO LOBBY PLAYERS
-        function listenToLobby() {
-            const roomRef = db.ref("rooms/" + roomId);
-            
-            // Update Player List UI
-            roomRef.child("players").on("value", snapshot => {
-                let div = document.getElementById("playersDiv");
-                div.innerHTML = "";
-                snapshot.forEach(child => {
-                    div.innerHTML += `<div class="player-item">${child.val().name}</div>`;
-                });
-            });
-
-            // Listen for Game Start
-            roomRef.child("status").on("value", snapshot => {
-                if (snapshot.val() === "playing") {
-                    document.getElementById("lobbyScreen").classList.add("hidden");
-                    document.getElementById("gameScreen").classList.remove("hidden");
-                    listenToGame();
-                }
-            });
-        }
-
-        // 3. START GAME (Host Only)
-        function startGame() {
-            db.ref("rooms/" + roomId).update({ status: "playing" });
-        }
-
-        // 4. ROLL DICE LOGIC
+        // ROLL DICE (Send to Firebase)
         function rollDice() {
+            // Generate Random Dice 1-6
             let diceVal = Math.floor(Math.random() * 6) + 1;
-            db.ref("rooms/" + roomId + "/game").set({
-                dice: diceVal,
-                roller: myName,
-                time: Date.now()
+            
+            // Send roll event to the specific Room in Firebase
+            db.ref("rooms/" + roomId + "/dice_event").set({
+                number: diceVal,
+                player: myName,
+                time: Date.now() // Unique timestamp forces update every time
             });
         }
 
-        // 5. LISTEN TO DICE ROLLS
-        function listenToGame() {
+        // LISTEN TO FIREBASE DICE ROLLS
+        function listenToDice() {
             const diceUi = document.getElementById("diceResult");
             const msgUi = document.getElementById("turnMsg");
 
-            db.ref("rooms/" + roomId + "/game").on("value", snapshot => {
+            db.ref("rooms/" + roomId + "/dice_event").on("value", snapshot => {
                 let data = snapshot.val();
-                if (data && data.dice) {
-                    // Start Animation
+                if (data && data.number) {
+                    
+                    // Show Rolling Animation
                     diceUi.classList.add("rolling");
                     diceUi.innerText = "🎲";
-                    msgUi.innerText = `${data.roller} is rolling...`;
+                    msgUi.innerText = `${data.player} is rolling...`;
 
-                    // Show result after 0.5s animation
+                    // After 0.5s stop animation and show result
                     setTimeout(() => {
                         diceUi.classList.remove("rolling");
-                        diceUi.innerText = data.dice;
-                        msgUi.innerText = `${data.roller} rolled a ${data.dice}!`;
+                        
+                        // Map numbers to dice emoji for premium look
+                        const diceEmojis = ["⚀", "⚁", "⚂", "⚃", "⚄", "⚅"];
+                        diceUi.innerText = diceEmojis[data.number - 1]; 
+                        
+                        msgUi.innerText = `${data.player} got ${data.number}!`;
                     }, 500);
                 }
             });
