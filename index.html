@@ -3,154 +3,117 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Premium Ludo</title>
+    <title>Room Ludo</title>
     <style>
-        body { background: #121214; color: white; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; text-align: center; margin: 0; padding: 20px; }
-        .glass-box { background: rgba(255, 255, 255, 0.05); padding: 20px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.1); margin-top: 50px; box-shadow: 0 0 20px rgba(0,255,255,0.1); }
-        input { padding: 15px; width: 80%; border-radius: 10px; border: none; font-size: 18px; text-align: center; margin-bottom: 20px; font-weight: bold;}
-        button { padding: 15px 30px; border-radius: 10px; border: none; background: linear-gradient(90deg, #00C6FF, #0072FF); color: white; font-size: 18px; font-weight: bold; width: 85%; margin: 10px 0; cursor: pointer; }
-        button.red { background: linear-gradient(90deg, #FF0044, #990000); }
-        #diceArea { margin-top: 40px; }
+        body { background: #121214; color: white; font-family: sans-serif; text-align: center; padding: 20px; }
+        .glass-box { background: rgba(255, 255, 255, 0.05); padding: 30px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.1); margin-top: 50px; }
+        input { padding: 15px; width: 80%; border-radius: 10px; border: none; font-size: 18px; text-align: center; margin-bottom: 20px;}
+        button { padding: 15px 30px; border-radius: 10px; border: none; background: #007BFF; color: white; font-size: 18px; font-weight: bold; cursor: pointer; width: 85%;}
+        #diceArea { margin-top: 30px; }
         #diceResult { font-size: 80px; margin: 20px; text-shadow: 0 0 20px #00FFFF; }
         .hidden { display: none; }
-        h1 { color: #00FFFF; text-shadow: 0 0 10px rgba(0,255,255,0.5); }
+        h1 { color: #00FFFF; }
+        .player-list { margin-top: 20px; text-align: left; background: #222; padding: 10px; border-radius: 10px;}
+        .player-name { font-size: 18px; color: #00FF00; margin: 5px 0;}
     </style>
 </head>
 <body>
 
-    <!-- LOBBY SCREEN -->
-    <div id="lobbyScreen" class="glass-box">
-        <h1>🎲 PREMIUM LUDO</h1>
-        <p>Create or Join a Room (5 Digit Code)</p>
-        
-        <button onclick="createRoom()">CREATE ROOM (Host)</button>
-        
-        <hr style="border-color: #333; margin: 30px 0;">
-        
-        <input type="number" id="roomCodeInput" placeholder="Enter 5-Digit Code" maxlength="5">
-        <button class="red" onclick="joinRoom()">JOIN ROOM</button>
+    <!-- LOGIN SCREEN -->
+    <div id="loginScreen" class="glass-box">
+        <h1>JOIN LUDO</h1>
+        <p>You are joining Chatroom Ludo</p>
+        <input type="text" id="playerName" placeholder="Enter your display name" maxlength="15">
+        <button onclick="joinGame()">ENTER GAME</button>
     </div>
 
     <!-- GAME SCREEN -->
     <div id="gameScreen" class="glass-box hidden">
-        <h1>ROOM: <span id="displayRoomCode" style="color: #FF007F;"></span></h1>
-        <p id="statusMsg">Waiting for Host to start...</p>
+        <h2 id="roomTitle">Room</h2>
         
-        <!-- Only Host can see this button initially -->
-        <button id="startBtn" class="hidden" onclick="startGame()">▶ START GAME</button>
-        
-        <div id="diceArea" class="hidden">
+        <div class="player-list">
+            <h3>Players Inside:</h3>
+            <div id="playersDiv"></div>
+        </div>
+
+        <div id="diceArea">
             <div id="diceResult">🎲</div>
             <button onclick="rollDice()">ROLL DICE</button>
         </div>
     </div>
 
-    <!-- Firebase SDKs (Compat version is easier for pure HTML) -->
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
 
     <script>
-        // Your Firebase Config
+        // FIREBASE CONFIG
         const firebaseConfig = {
             apiKey: "AIzaSyDN3gmMK-wrOV2VsLS1F-vGsijahPkTG4g",
             authDomain: "ludo-e8ffb.firebaseapp.com",
             projectId: "ludo-e8ffb",
             databaseURL: "https://ludo-e8ffb-default-rtdb.firebaseio.com/",
-            storageBucket: "ludo-e8ffb.firebasestorage.app",
-            messagingSenderId: "7664555721",
-            appId: "1:7664555721:web:9c62b81a2d95caa1401f18"
+            storageBucket: "ludo-e8ffb.firebasestorage.app"
         };
-
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        let myRoomCode = "";
-        let isHost = false;
+        // GET ROOM ID FROM URL (?room=12345)
+        const urlParams = new URLSearchParams(window.location.search);
+        const roomId = urlParams.get('room') || "public_room";
+        
+        let myName = "";
 
-        // 1. CREATE ROOM (HOST)
-        function createRoom() {
-            // Generate Random 5 digit code
-            myRoomCode = Math.floor(10000 + Math.random() * 90000).toString();
-            isHost = true;
-            
-            // Save to Realtime Database
-            db.ref("rooms/" + myRoomCode).set({
-                status: "waiting",
-                players: 1,
-                dice_value: 0
-            });
+        // JOIN BUTTON CLICK
+        function joinGame() {
+            myName = document.getElementById("playerName").value.trim();
+            if (myName === "") { alert("Please enter your name!"); return; }
 
-            document.getElementById("lobbyScreen").classList.add("hidden");
+            document.getElementById("loginScreen").classList.add("hidden");
             document.getElementById("gameScreen").classList.remove("hidden");
-            document.getElementById("displayRoomCode").innerText = myRoomCode;
-            document.getElementById("startBtn").classList.remove("hidden"); // Host can start
-            
+            document.getElementById("roomTitle").innerText = "Ludo Room: " + roomId;
+
+            // Add player to Firebase Room
+            const playerRef = db.ref("rooms/" + roomId + "/players").push();
+            playerRef.set({ name: myName });
+
+            // Remove player when they close the game
+            playerRef.onDisconnect().remove();
+
             listenToRoom();
         }
 
-        // 2. JOIN ROOM (FRIEND)
-        function joinRoom() {
-            let inputCode = document.getElementById("roomCodeInput").value;
-            if (inputCode.length !== 5) {
-                alert("Please enter a valid 5-digit code.");
-                return;
-            }
-
-            db.ref("rooms/" + inputCode).once("value").then((snapshot) => {
-                if (snapshot.exists()) {
-                    let data = snapshot.val();
-                    if(data.status === "waiting") {
-                        myRoomCode = inputCode;
-                        db.ref("rooms/" + myRoomCode).update({ players: data.players + 1 });
-                        
-                        document.getElementById("lobbyScreen").classList.add("hidden");
-                        document.getElementById("gameScreen").classList.remove("hidden");
-                        document.getElementById("displayRoomCode").innerText = myRoomCode;
-                        
-                        listenToRoom();
-                    } else {
-                        alert("Game already started!");
-                    }
-                } else {
-                    alert("Room not found!");
-                }
-            });
-        }
-
-        // 3. START GAME (Only Host)
-        function startGame() {
-            db.ref("rooms/" + myRoomCode).update({ status: "playing" });
-            document.getElementById("startBtn").classList.add("hidden");
-        }
-
-        // 4. ROLL DICE
+        // ROLL DICE
         function rollDice() {
-            // Random 1 to 6
             let randomDice = Math.floor(Math.random() * 6) + 1;
             
-            // Update Firebase
-            db.ref("rooms/" + myRoomCode).update({
+            // Save dice roll and WHO rolled it to Firebase
+            db.ref("rooms/" + roomId + "/game").update({
                 dice_value: randomDice,
-                timestamp: Date.now() // to force update even if same number comes twice
+                rolled_by: myName,
+                timestamp: Date.now()
             });
         }
 
-        // 5. LISTEN TO FIREBASE REALTIME CHANGES
+        // LISTEN TO REALTIME CHANGES
         function listenToRoom() {
-            db.ref("rooms/" + myRoomCode).on("value", (snapshot) => {
+            // Listen to Players List
+            db.ref("rooms/" + roomId + "/players").on("value", (snapshot) => {
+                let playersDiv = document.getElementById("playersDiv");
+                playersDiv.innerHTML = ""; // Clear list
+                snapshot.forEach((child) => {
+                    let pName = child.val().name;
+                    playersDiv.innerHTML += `<div class="player-name">👤 ${pName}</div>`;
+                });
+            });
+
+            // Listen to Dice Rolls
+            db.ref("rooms/" + roomId + "/game").on("value", (snapshot) => {
                 let data = snapshot.val();
-                if (!data) return;
-
-                // Check Game Status
-                if (data.status === "playing") {
-                    document.getElementById("statusMsg").innerText = "Game Started! Players: " + data.players;
-                    document.getElementById("diceArea").classList.remove("hidden");
-                    document.getElementById("startBtn").classList.add("hidden");
-                }
-
-                // Update Dice UI
-                if (data.dice_value > 0) {
+                if (data && data.dice_value) {
                     document.getElementById("diceResult").innerText = data.dice_value;
+                    // Flash effect to show dice changed
+                    document.getElementById("diceResult").style.color = "#FF007F";
+                    setTimeout(() => document.getElementById("diceResult").style.color = "white", 500);
                 }
             });
         }
