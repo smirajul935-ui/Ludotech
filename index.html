@@ -2,176 +2,424 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SagarTech99 Ludo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SagarTech99 Premium Ludo</title>
     <style>
-        body { 
-            background: #0A0A0A; 
-            color: #ffffff; 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-            text-align: center; 
-            margin: 0; 
-            padding: 0; 
-        }
-        .glass-box { 
-            background: rgba(255, 255, 255, 0.05); 
-            backdrop-filter: blur(15px); 
-            padding: 30px; 
-            border-radius: 20px; 
-            border: 1px solid rgba(255, 255, 255, 0.1); 
-            margin: 50px auto;
-            width: 85%; 
-            max-width: 400px;
-        }
-        .brand { color: #00FFFF; font-size: 28px; font-weight: bold; margin-bottom: 5px; }
-        input { 
-            padding: 15px; width: 85%; border-radius: 12px; border: 1px solid #00FFFF; 
-            background: rgba(0,0,0,0.5); color: #00FFFF; font-size: 16px; text-align: center; margin-bottom: 20px; outline: none;
-        }
-        button { 
-            padding: 15px; border-radius: 12px; border: none; 
-            background: linear-gradient(45deg, #FF007F, #7F00FF); 
-            color: white; font-size: 16px; font-weight: bold; cursor: pointer; width: 95%; 
-        }
+        body { background: #0a0a0a; color: white; font-family: sans-serif; text-align: center; margin: 0; padding: 0; overflow: hidden; display: flex; flex-direction: column; height: 100vh;}
+        
+        .glass-box { background: rgba(255, 255, 255, 0.1); padding: 30px; border-radius: 20px; border: 1px solid #00FFFF; width: 85%; max-width: 400px; margin: auto; box-shadow: 0 0 20px rgba(0,255,255,0.4); }
+        .brand { color: #00FFFF; font-size: 26px; font-weight: bold; margin-bottom: 20px; text-shadow: 0 0 10px rgba(0,255,255,0.5); }
+        input, select { padding: 15px; width: 85%; border-radius: 12px; border: 1px solid #00FFFF; background: #222; color: white; font-size: 16px; text-align: center; margin-bottom: 20px; font-weight: bold; }
+        button { padding: 15px; border-radius: 12px; border: none; background: linear-gradient(90deg, #FF007F, #7F00FF); color: white; font-size: 16px; font-weight: bold; cursor: pointer; width: 95%; box-shadow: 0 5px 15px rgba(255, 0, 127, 0.4); }
         button:active { transform: scale(0.95); }
         .hidden { display: none !important; }
+
+        /* 🔥 LUDO BOARD AREA 🔥 */
+        #gameScreen { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding-top: 15px; width: 100vw;}
         
-        /* Ludo Board Area */
-        #ludoBoardArea {
-            position: relative;
-            width: 100vw;
-            max-width: 500px;
-            margin: auto;
-        }
-        #ludoBoardImg {
-            width: 100%;
-            height: auto;
-            display: block;
+        #boardContainer { 
+            position: relative; 
+            width: 95vw; 
+            max-width: 400px; 
+            background-color: #fff;
+            background-image: url('https://upload.wikimedia.org/wikipedia/commons/thumb/e/e2/Ludo_board.svg/1024px-Ludo_board.svg.png'); 
+            background-size: 100% 100%;
+            border-radius: 5px; 
+            box-shadow: 0 0 30px rgba(0,0,0,0.8); 
+            border: 3px solid #333;
+            margin: 0 auto;
         }
         
-        /* Dice Container at the bottom */
+        /* 3D Tokens (Guti) */
+        .token { 
+            position: absolute; width: 6%; height: 6%; border-radius: 50%; 
+            border: 2px solid white; box-shadow: 0 4px 8px rgba(0,0,0,0.9); 
+            transform: translate(-50%, -50%); transition: all 0.3s ease; z-index: 50; cursor: pointer;
+        }
+        .token.active-turn { animation: bounce 0.5s infinite alternate; box-shadow: 0 0 15px white; border: 3px solid white; z-index: 100;}
+        @keyframes bounce { from { transform: translate(-50%, -50%) scale(1); } to { transform: translate(-50%, -70%) scale(1.3); } }
+
+        /* Bright Token Colors */
+        .red { background: #FF0000; }
+        .green { background: #00FF00; }
+        .yellow { background: #FFD700; }
+        .blue { background: #0088FF; }
+
+        /* Bottom Controls */
         #diceArea { 
-            background: #1C1D22;
-            padding: 20px;
-            border-top-left-radius: 20px;
-            border-top-right-radius: 20px;
-            position: fixed;
-            bottom: 0;
-            width: 100%;
-            box-sizing: border-box;
-            box-shadow: 0 -5px 20px rgba(0,0,0,0.5);
+            margin-top: auto; background: #1C1D22; padding: 15px; border-top-left-radius: 30px; 
+            border-top-right-radius: 30px; width: 100%; box-sizing: border-box; box-shadow: 0 -10px 30px rgba(0,0,0,0.8); 
         }
         #diceResult { 
-            font-size: 60px; margin: 10px auto; width: 80px; height: 80px; 
-            line-height: 80px; background: rgba(255,255,255,0.1); border-radius: 15px;
-            box-shadow: 0 0 15px #00FFFF; transition: 0.2s;
+            font-size: 60px; margin: 5px auto; width: 80px; height: 80px; line-height: 80px; 
+            background: rgba(255,255,255,0.1); border-radius: 20px; color: white; border: 2px solid #555;
         }
-        .rolling { animation: spin 0.3s infinite linear; color: #FF007F; }
-        @keyframes spin { 100% { transform: rotate(360deg) scale(1.1); } }
-        #turnMsg { color: #00FF00; margin-bottom: 10px; font-weight: bold; font-size: 14px;}
-        .player-info { color: #aaa; font-size: 12px; margin-bottom: 5px;}
+        .rolling { animation: shake 0.3s infinite; color: #00FFFF !important; }
+        @keyframes shake { 0% { transform: rotate(15deg); } 50% { transform: rotate(-15deg); } 100% { transform: rotate(15deg); } }
+        
+        #turnMsg { color: #00FF00; margin-bottom: 5px; font-weight: bold; font-size: 15px;}
+        
+        /* Winner Overlay */
+        #winnerOverlay { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.9); z-index: 1000; display: flex; flex-direction: column; justify-content: center; align-items: center; }
     </style>
 </head>
 <body>
 
-    <!-- SCREEN 1: LOGIN -->
+    <!-- LOGIN SCREEN -->
     <div id="loginScreen" class="glass-box">
-        <div class="brand">SagarTech99</div>
-        <p>Welcome to Room Ludo</p>
-        <input type="text" id="playerName" placeholder="Enter your Game Name" maxlength="12">
-        <button onclick="joinGame()">ENTER LUDO</button>
+        <div class="brand">LUDO KING MODE</div>
+        <input type="text" id="playerName" placeholder="Enter Your Name" maxlength="12">
+        <select id="playerColor">
+            <option value="red" style="color:red;">❤️ RED</option>
+            <option value="green" style="color:green;">💚 GREEN</option>
+            <option value="yellow" style="color:yellow;">💛 YELLOW</option>
+            <option value="blue" style="color:blue;">💙 BLUE</option>
+        </select>
+        <button onclick="joinGame()">ENTER GAME</button>
     </div>
 
-    <!-- SCREEN 2: GAME BOARD -->
+    <!-- GAME BOARD SCREEN -->
     <div id="gameScreen" class="hidden">
-        
-        <div id="ludoBoardArea">
-            <!-- Professional Ludo Board Image -->
-            <img id="ludoBoardImg" src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e2/Ludo_board.svg/1024px-Ludo_board.svg.png" alt="Ludo Board">
+        <div id="boardContainer">
+            <!-- Tokens injected by JS -->
         </div>
 
-        <!-- Dice Control at Bottom -->
         <div id="diceArea">
-            <div class="player-info">Playing as: <span id="myNameDisplay" style="color:white;font-weight:bold;"></span></div>
-            <div id="turnMsg">Waiting for dice roll...</div>
+            <div style="color: #aaa; font-size: 12px; margin-bottom:5px;">Playing as: <span id="myNameDisplay" style="color:white;font-weight:bold;"></span></div>
+            <div id="turnIndicator" class="status-msg">Waiting for players...</div>
             <div id="diceResult">🎲</div>
-            <button onclick="rollDice()">ROLL DICE</button>
+            <button id="rollBtn" onclick="rollDice()" style="display:none; background: linear-gradient(90deg, #00C6FF, #0072FF); margin-top:10px;">ROLL DICE</button>
         </div>
     </div>
 
-    <!-- Firebase SDKs -->
+    <div id="winnerOverlay" class="hidden">
+        <h1 style="font-size:80px; margin:0;">🏆</h1>
+        <h1 style="color: #FFD700;">WE HAVE A WINNER!</h1>
+        <h2 id="winnerName" style="color: white;">Player Name</h2>
+        <button onclick="location.reload()" style="width: 60%; margin-top: 30px;">PLAY AGAIN</button>
+    </div>
+
+    <!-- Firebase -->
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
 
     <script>
-        // 🔴 FIREBASE CONFIGURATION
+        // 🔴 1. FIREBASE SETUP
         const firebaseConfig = {
             apiKey: "AIzaSyDN3gmMK-wrOV2VsLS1F-vGsijahPkTG4g",
             authDomain: "ludo-e8ffb.firebaseapp.com",
             projectId: "ludo-e8ffb",
-            databaseURL: "https://ludo-e8ffb-default-rtdb.firebaseio.com/",
-            storageBucket: "ludo-e8ffb.firebasestorage.app"
+            databaseURL: "https://ludo-e8ffb-default-rtdb.firebaseio.com/"
         };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        // INJECTED FROM JAVA AIDE
-        let roomId = "INJECTED_ROOM_ID"; 
-        if(roomId === "INJECTED_ROOM_ID") roomId = "TestRoom"; // Browser test fallback
+        let roomId = new URLSearchParams(window.location.search).get('room') || "TestRoom";
+        let myName = "", myColor = "";
+        let currentTurn = "red"; 
+        let myDiceValue = 0;
+        let hasRolled = false;
 
-        let myName = "";
+        // FORCE BOARD TO BE PERFECT SQUARE SO TOKENS ALIGN PERFECTLY
+        function resizeBoard() {
+            let board = document.getElementById('boardContainer');
+            let w = board.clientWidth;
+            board.style.height = w + 'px';
+        }
+        window.addEventListener('resize', resizeBoard);
 
-        // JOIN GAME
+        // GRID CALCULATION (15x15 Grid)
+        const getXY = (col, row) => ({ x: (col * 6.666) + 3.333, y: (row * 6.666) + 3.333 });
+
+        // Common Path for all tokens
+        const commonPath = [
+            getXY(1,6), getXY(2,6), getXY(3,6), getXY(4,6), getXY(5,6), 
+            getXY(6,5), getXY(6,4), getXY(6,3), getXY(6,2), getXY(6,1), getXY(6,0), 
+            getXY(7,0), getXY(8,0), 
+            getXY(8,1), getXY(8,2), getXY(8,3), getXY(8,4), getXY(8,5), 
+            getXY(9,6), getXY(10,6), getXY(11,6), getXY(12,6), getXY(13,6), getXY(14,6), 
+            getXY(14,7), getXY(14,8), 
+            getXY(13,8), getXY(12,8), getXY(11,8), getXY(10,8), getXY(9,8), 
+            getXY(8,9), getXY(8,10), getXY(8,11), getXY(8,12), getXY(8,13), getXY(8,14), 
+            getXY(7,14), getXY(6,14), 
+            getXY(6,13), getXY(6,12), getXY(6,11), getXY(6,10), getXY(6,9), 
+            getXY(5,8), getXY(4,8), getXY(3,8), getXY(2,8), getXY(1,8), getXY(0,8), 
+            getXY(0,7) 
+        ];
+
+        const homePaths = {
+            'red': [getXY(1,7), getXY(2,7), getXY(3,7), getXY(4,7), getXY(5,7), getXY(7,7)],
+            'green': [getXY(7,1), getXY(7,2), getXY(7,3), getXY(7,4), getXY(7,5), getXY(7,7)],
+            'yellow': [getXY(13,7), getXY(12,7), getXY(11,7), getXY(10,7), getXY(9,7), getXY(7,7)],
+            'blue': [getXY(7,13), getXY(7,12), getXY(7,11), getXY(7,10), getXY(7,9), getXY(7,7)]
+        };
+
+        const basePos = {
+            'red': [getXY(2, 2.5), getXY(4, 2.5), getXY(2, 4.5), getXY(4, 4.5)], 
+            'green': [getXY(10.5, 2.5), getXY(12.5, 2.5), getXY(10.5, 4.5), getXY(12.5, 4.5)],
+            'yellow': [getXY(10.5, 10.5), getXY(12.5, 10.5), getXY(10.5, 12.5), getXY(12.5, 12.5)],
+            'blue': [getXY(2.5, 10.5), getXY(4.5, 10.5), getXY(2.5, 12.5), getXY(4.5, 12.5)]
+        };
+
+        const colorOffset = { 'red': 0, 'green': 13, 'yellow': 26, 'blue': 39 };
+
+        let localTokens = {}; 
+
+        // 2. INITIALIZE TOKENS
+        function createTokens() {
+            const board = document.getElementById("boardContainer");
+            const colors = ['red', 'green', 'yellow', 'blue'];
+            for (let c of colors) {
+                localTokens[c] = [-1, -1, -1, -1]; 
+                for (let i = 0; i < 4; i++) {
+                    let token = document.createElement("div");
+                    token.className = `token ${c}`;
+                    token.id = `token_${c}_${i}`;
+                    token.onclick = () => onTokenClick(c, i); 
+                    board.appendChild(token);
+                    updateTokenUI(c, i, -1);
+                }
+            }
+        }
+
+        function updateTokenUI(color, i, pos) {
+            let tk = document.getElementById(`token_${color}_${i}`);
+            if(!tk) return;
+            if(pos === -1) {
+                tk.style.left = basePos[color][i].x + "%";
+                tk.style.top = basePos[color][i].y + "%";
+            } else if (pos <= 50) {
+                let absPos = (pos + colorOffset[color]) % 52;
+                tk.style.left = commonPath[absPos].x + "%";
+                tk.style.top = commonPath[absPos].y + "%";
+            } else if (pos >= 51 && pos <= 56) {
+                let homeIdx = pos - 51;
+                tk.style.left = homePaths[color][homeIdx].x + "%";
+                tk.style.top = homePaths[color][homeIdx].y + "%";
+            }
+        }
+
+        // 3. JOIN GAME
         function joinGame() {
             myName = document.getElementById("playerName").value.trim();
-            if (myName === "") { alert("Please enter your name!"); return; }
+            myColor = document.getElementById("playerColor").value;
+            if (myName === "") { alert("Enter Name!"); return; }
 
             document.getElementById("loginScreen").classList.add("hidden");
             document.getElementById("gameScreen").classList.remove("hidden");
             document.getElementById("myNameDisplay").innerText = myName;
+            
+            resizeBoard(); // Ensure square board
+            createTokens();
 
-            listenToDice();
+            db.ref(`rooms/${roomId}/players/${myColor}`).set({ name: myName });
+            db.ref(`rooms/${roomId}/players/${myColor}`).onDisconnect().remove();
+
+            db.ref(`rooms/${roomId}/tokens/${myColor}`).once('value', snap => {
+                if(!snap.exists()) db.ref(`rooms/${roomId}/tokens/${myColor}`).set([-1, -1, -1, -1]);
+            });
+
+            db.ref(`rooms/${roomId}/turn`).once('value', snap => {
+                if(!snap.exists()) db.ref(`rooms/${roomId}/turn`).set('red');
+            });
+
+            startListeners();
         }
 
-        // ROLL DICE (Send to Firebase)
+        // 4. ROLL DICE
         function rollDice() {
-            // Generate Random Dice 1-6
-            let diceVal = Math.floor(Math.random() * 6) + 1;
-            
-            // Send roll event to the specific Room in Firebase
-            db.ref("rooms/" + roomId + "/dice_event").set({
-                number: diceVal,
-                player: myName,
-                time: Date.now() // Unique timestamp forces update every time
+            if (currentTurn !== myColor) { alert("Not your turn!"); return; }
+            if (hasRolled) { alert("You already rolled! Move a token."); return; }
+
+            myDiceValue = Math.floor(Math.random() * 6) + 1;
+            hasRolled = true;
+
+            db.ref(`rooms/${roomId}/dice`).set({
+                val: myDiceValue,
+                roller: myName,
+                color: myColor,
+                time: Date.now() 
+            });
+
+            setTimeout(() => { checkPassTurn(); }, 1000);
+        }
+
+        function checkPassTurn() {
+            db.ref(`rooms/${roomId}/tokens/${myColor}`).once('value', snap => {
+                let tokens = snap.val() || [-1, -1, -1, -1];
+                let canMove = false;
+                for (let pos of tokens) {
+                    if (pos === -1 && myDiceValue === 6) canMove = true;
+                    if (pos >= 0 && (pos + myDiceValue) <= 56) canMove = true;
+                }
+                if (!canMove) { hasRolled = false; passTurn(); }
             });
         }
 
-        // LISTEN TO FIREBASE DICE ROLLS
-        function listenToDice() {
-            const diceUi = document.getElementById("diceResult");
-            const msgUi = document.getElementById("turnMsg");
+        // 5. CLICK TOKEN
+        function onTokenClick(color, tokenIndex) {
+            if (color !== myColor || currentTurn !== myColor || !hasRolled) return;
 
-            db.ref("rooms/" + roomId + "/dice_event").on("value", snapshot => {
-                let data = snapshot.val();
-                if (data && data.number) {
-                    
-                    // Show Rolling Animation
-                    diceUi.classList.add("rolling");
-                    diceUi.innerText = "🎲";
-                    msgUi.innerText = `${data.player} is rolling...`;
+            db.ref(`rooms/${roomId}/tokens/${myColor}`).once('value', snap => {
+                let tokens = snap.val() || [-1, -1, -1, -1];
+                let currentPos = tokens[tokenIndex];
 
-                    // After 0.5s stop animation and show result
-                    setTimeout(() => {
-                        diceUi.classList.remove("rolling");
-                        
-                        // Map numbers to dice emoji for premium look
-                        const diceEmojis = ["⚀", "⚁", "⚂", "⚃", "⚄", "⚅"];
-                        diceUi.innerText = diceEmojis[data.number - 1]; 
-                        
-                        msgUi.innerText = `${data.player} got ${data.number}!`;
-                    }, 500);
+                if (currentPos === -1 && myDiceValue === 6) {
+                    tokens[tokenIndex] = 0;
+                    syncAndFinishMove(tokens, tokenIndex);
+                } else if (currentPos >= 0) {
+                    let newPos = currentPos + myDiceValue;
+                    if (newPos <= 56) {
+                        walkToken(tokenIndex, currentPos, newPos, tokens);
+                    } else {
+                        alert("You need exact number to enter Home!");
+                    }
                 }
             });
+        }
+
+        function walkToken(tokenIndex, start, end, tokensArray) {
+            let currentStep = start;
+            let interval = setInterval(() => {
+                currentStep++;
+                updateTokenUI(myColor, tokenIndex, currentStep); 
+                
+                if (currentStep === end) {
+                    clearInterval(interval);
+                    tokensArray[tokenIndex] = end;
+                    checkKillAndWin(end, tokensArray, tokenIndex);
+                }
+            }, 250); 
+        }
+
+        function syncAndFinishMove(tokensArray, i) {
+            db.ref(`rooms/${roomId}/tokens/${myColor}`).set(tokensArray);
+            hasRolled = false;
+            if (myDiceValue !== 6) { passTurn(); }
+        }
+
+        function checkKillAndWin(targetPos, tokensArray, tokenIndex) {
+            let won = true;
+            for(let pos of tokensArray) { if(pos !== 56) won = false; }
+            if(won) {
+                db.ref(`rooms/${roomId}/winner`).set(myName);
+                syncAndFinishMove(tokensArray, tokenIndex);
+                return;
+            }
+
+            if (targetPos > 50) { 
+                syncAndFinishMove(tokensArray, tokenIndex);
+                if (targetPos === 56) { hasRolled = false; } 
+                return; 
+            }
+
+            let myAbsolutePos = (targetPos + colorOffset[myColor]) % 52;
+            let killHappened = false;
+
+            const safeZones = [0, 8, 13, 21, 26, 34, 39, 47]; 
+            if (safeZones.includes(myAbsolutePos)) { 
+                syncAndFinishMove(tokensArray, tokenIndex); 
+                return; 
+            }
+
+            const colors = ['red', 'green', 'yellow', 'blue'];
+            let checksPending = 3;
+
+            for (let c of colors) {
+                if (c === myColor) { checksPending--; continue; }
+                
+                db.ref(`rooms/${roomId}/tokens/${c}`).once('value', snap => {
+                    let enemyTokens = snap.val() || [-1, -1, -1, -1];
+                    for (let i=0; i<4; i++) {
+                        let ePos = enemyTokens[i];
+                        if (ePos >= 0 && ePos <= 50) {
+                            let eAbsolutePos = (ePos + colorOffset[c]) % 52;
+                            if (eAbsolutePos === myAbsolutePos) {
+                                enemyTokens[i] = -1; // Kill!
+                                db.ref(`rooms/${roomId}/tokens/${c}`).set(enemyTokens);
+                                killHappened = true;
+                            }
+                        }
+                    }
+                    checksPending--;
+                    if (checksPending === 0) {
+                        if (killHappened) { hasRolled = false; } 
+                        syncAndFinishMove(tokensArray, tokenIndex);
+                    }
+                });
+            }
+        }
+
+        function passTurn() {
+            const colors = ['red', 'green', 'yellow', 'blue'];
+            let nextIdx = (colors.indexOf(myColor) + 1) % 4;
+            db.ref(`rooms/${roomId}/turn`).set(colors[nextIdx]);
+        }
+
+        function startListeners() {
+            db.ref(`rooms/${roomId}/turn`).on('value', snap => {
+                currentTurn = snap.val() || 'red';
+                document.getElementById('turnIndicator').innerText = `Turn: ${currentTurn.toUpperCase()}`;
+                document.getElementById('turnIndicator').style.color = currentTurn;
+                
+                if (currentTurn === myColor) {
+                    document.getElementById('rollBtn').style.display = 'block';
+                    highlightMyTokens();
+                } else {
+                    document.getElementById('rollBtn').style.display = 'none';
+                    removeHighlights();
+                }
+            });
+
+            db.ref(`rooms/${roomId}/dice`).on('value', snap => {
+                let data = snap.val();
+                if (data) {
+                    let dUI = document.getElementById("diceResult");
+                    dUI.classList.add("rolling");
+                    setTimeout(() => {
+                        dUI.classList.remove("rolling");
+                        const emojis = ["⚀", "⚁", "⚂", "⚃", "⚄", "⚅"];
+                        dUI.innerText = emojis[data.val - 1];
+                    }, 400);
+                }
+            });
+
+            const colors = ['red', 'green', 'yellow', 'blue'];
+            for (let c of colors) {
+                db.ref(`rooms/${roomId}/tokens/${c}`).on('value', snap => {
+                    let tokens = snap.val() || [-1,-1,-1,-1];
+                    for (let i = 0; i < 4; i++) {
+                        if (localTokens[c][i] !== tokens[i]) {
+                            updateTokenUI(c, i, tokens[i]);
+                            localTokens[c][i] = tokens[i];
+                        }
+                    }
+                });
+            }
+
+            db.ref(`rooms/${roomId}/winner`).on('value', snap => {
+                let winner = snap.val();
+                if(winner) {
+                    document.getElementById("winnerOverlay").classList.remove("hidden");
+                    document.getElementById("winnerName").innerText = winner + " WINS!";
+                }
+            });
+        }
+
+        function highlightMyTokens() {
+            db.ref(`rooms/${roomId}/tokens/${myColor}`).once('value', snap => {
+                let tokens = snap.val() || [-1,-1,-1,-1];
+                for(let i=0; i<4; i++) {
+                    if (tokens[i] !== 56) { 
+                        document.getElementById(`token_${myColor}_${i}`).classList.add('active-turn');
+                    }
+                }
+            });
+        }
+        
+        function removeHighlights() {
+            let tkns = document.querySelectorAll('.token');
+            tkns.forEach(t => t.classList.remove('active-turn'));
         }
     </script>
 </body>
